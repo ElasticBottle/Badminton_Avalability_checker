@@ -40,7 +40,6 @@ def main():
     active_sg_slots = get_data_from_active_sg(date, time_from, time_till)
     pa_slots = get_data_from_pa(date, time_from, time_till)
     print(active_sg_slots, "\n\n", pa_slots)
-    active_sg()
 
 
 if __name__ == "__main__":

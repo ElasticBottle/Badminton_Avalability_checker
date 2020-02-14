@@ -11,6 +11,7 @@ black = "*"
 requests = "*"
 beautifulsoup4 = "*"
 lxml = "*"
+selenium = "*"
 
 [requires]
 python_version = "3.8"
