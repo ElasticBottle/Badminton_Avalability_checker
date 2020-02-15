@@ -9,6 +9,7 @@ class Match(enum.Enum):
 
 class TimingMatcher:
     def __get_court_match(self, court_name, court_timing, time_from, time_till):
+        # TODO: match the timing of the court with the specified timing
         return Match.NO_MATCH
 
     def match_timings(self, available_timings, time_from, time_till):
@@ -26,4 +27,5 @@ class TimingMatcher:
         return court_matches
 
     def group_by_timings(self, available_timings):
+        # TODO: group the courts into timing buckets rather than by court name
         pass

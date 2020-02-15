@@ -22,20 +22,19 @@ def active_sg():
 
 
 def get_data_from_active_sg(date, time_from, time_till):
-    # Todo: Get timing data from all of active sg badminton courts
-    # Todo: Match the timing data from all of the courts to the timing data that we are interested in
-    # Todo: return the list of data that matches in some reasonable format
+    # TODO: Get timing data from all of active sg badminton courts
+    # TODO: Match the timing data from all of the courts to the timing data that we are interested in
+    # TODO: return the list of data that matches in some reasonable format
     return 0
 
 
 def get_data_from_pa(date, time_from, time_till):
-    # Todo: Get timing data from all of pa badminton courts
     one_pa_timing = OnePaTiming()
     available_timings = one_pa_timing.get_one_pa_timings(18)
-    # Todo: Match the timing data from all of the courts to the timing data that we are interested in
+    # TODO: Match the timing data from all of the courts to the timing data that we are interested in
     matched_times = TimingMatcher()
     matched_times.match_timings(available_timings, time_from, time_till)
-    # Todo: return the list of data that matches in some reasonable format
+    # TODO: return the list of data that matches in some reasonable format
     return 0
 
 
