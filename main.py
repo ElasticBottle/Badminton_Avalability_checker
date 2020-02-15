@@ -5,22 +5,6 @@ from one_pa_timings import OnePaTiming
 from timing_matcher import TimingMatcher
 
 
-def active_sg():
-    LOGIN_URL = "https://members.myactivesg.com/auth/signin"
-
-    REQUEST_URL = "https://members.myactivesg.com/facilities/view/activity/18/venue/292?time_from=1581609600"
-
-    payload = {"email": "s9909427c", "password": "however200"}
-
-    with requests.Session() as session:
-        post = session.post(LOGIN_URL, data=payload)
-        print(post, "\n\n")
-        r = session.get(REQUEST_URL)
-        soup = BeautifulSoup(r.content, "html.parser")
-        results = soup.find(id="formTimeslots")
-        print(results.prettify())
-
-
 def get_data_from_active_sg(date, time_from, time_till):
     # TODO: Get timing data from all of active sg badminton courts
     # TODO: Match the timing data from all of the courts to the timing data that we are interested in
@@ -30,7 +14,7 @@ def get_data_from_active_sg(date, time_from, time_till):
 
 def get_data_from_pa(date, time_from, time_till):
     one_pa_timing = OnePaTiming()
-    available_timings = one_pa_timing.get_one_pa_timings(18)
+    available_timings = one_pa_timing.get_available_timings(18)
     # TODO: Match the timing data from all of the courts to the timing data that we are interested in
     matched_times = TimingMatcher()
     matched_times.match_timings(available_timings, time_from, time_till)
