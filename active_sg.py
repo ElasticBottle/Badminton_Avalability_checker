@@ -50,7 +50,7 @@ class ActiveSG(SeleniumBase):
         Navigates the driver to the badminton booking page for active sg
         """
         driver.get(
-            "https://members.myactivesg.com/facilities/view/activity/18/venue/968?"
+            "https://members.myactivesg.com/facilities/view/activity/18/venue/292?"
         )
 
     def _get_right_date(self, driver, day):
@@ -129,7 +129,20 @@ class ActiveSG(SeleniumBase):
         Returns:
             list<string>: A collection of the timings
         """
-        return []
+        timings = set()
+        timeslots = driver.find_element_by_xpath('//*[@id="formTimeslots"]')
+        timeslots = timeslots.find_elements_by_xpath(".//div/div/div/div")
+        for i in range(15):
+            timing = (
+                timeslots[i]
+                .find_element_by_xpath(".//label")
+                .get_attribute("innerText")
+            )
+            if timing != "Select another venue":
+                timings.add(timing)
+            else:
+                return timings
+        return timings
 
     def _get_available_courts_at_court_loc(self, driver):
         """
@@ -143,7 +156,18 @@ class ActiveSG(SeleniumBase):
             list<string>: A collection of the court timing indexes that is available.
                 Timing timing to be retrieved from _get_timing_structure_at_court_loc() function.
         """
-        return []
+        availability = set()
+        timeslots = driver.find_element_by_xpath('//*[@id="formTimeslots"]')
+        timeslots = timeslots.find_elements_by_xpath(".//div/div/div/div")
+        for time in timeslots:
+            available = time.find_element_by_xpath(".//input").get_attribute("name")
+            print(available)
+            if available == "timeslots[]":
+                availability.add(time.find_element_by_xpath(".//label")).get_attribute(
+                    "innerText"
+                )
+        print(availability)
+        return availability
 
     def _get_timing_for_court_loc(self, driver):
         """
@@ -169,7 +193,11 @@ class ActiveSG(SeleniumBase):
             court_loc_to_check (int): The index of the particular court location that you want to navigate too.
                 court_loc_to_check should be between 0 - 75 
         """
-        pass
+        options = driver.find_element_by_xpath('//*[@id="facVenueSelection"]')
+        options.click()
+        options = driver.find_elements_by_xpath('//*[@id="facVenueSelection"]/option')
+        driver.implicitly_wait(PAUSE)
+        options[court_loc_to_check].click()
 
     def get_available_timings(self, day):
         driver = self._get_driver(
@@ -179,12 +207,8 @@ class ActiveSG(SeleniumBase):
 
         self._login(driver, UserInfo.active_sg_user, UserInfo.active_sg_pass)
         self._navigate_to_badminton_booking(driver)
-        self._click_date(driver, day)
-        print("reached new date")
+        all_available_timing = super().search_for_court_timings(
+            self, driver, day, NUMBER_OF_BADMINTON_LOC, PAUSE
+        )
 
-        all_courts_available_timing = dict()
-        driver.implicitly_wait(PAUSE)
-        for i in range(NUMBER_OF_BADMINTON_LOC):
-            self._get_timing_for_court_loc(driver)
-            self._go_to_court_loc(driver, i + 1)
-        self._get_timing_for_court_loc(driver)
+        return all_available_timing
