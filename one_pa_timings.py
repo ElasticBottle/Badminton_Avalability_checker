@@ -192,6 +192,8 @@ class OnePaTiming:
 
         all_cc_available_timing = dict()
         driver.implicitly_wait(PAUSE)
+
+        # ? Add multi threading to launch multiple web browsers at once and speed up search
         for i in range(NUMBER_OF_CC_WITH_BADMINTON_COURT):
             cc_name, cc_timing = self.__get_timing_for_cc(driver)
             all_cc_available_timing[cc_name] = cc_timing
@@ -202,5 +204,4 @@ class OnePaTiming:
 
         end = time.time()
         print("time taken", end - start)
-
         return all_cc_available_timing
