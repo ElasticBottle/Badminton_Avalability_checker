@@ -1,15 +1,40 @@
 from selenium import webdriver
+import enum
+
+
+class Browser(enum.Enum):
+    CHROME = "chrome"
+    FIREFOX = "firefox"
 
 
 class OnePaTiming:
+    def __get_driver(self, browser, driver_path):
+        if browser == Browser.CHROME.value:
+            return webdriver.Chrome(driver_path)
+        if browser == Browser.FIREFOX.value:
+            return webdriver.Firefox(driver_path)
+
+    def __get_timing_for_cc(self):
+        pass
+
+    def __go_to_next_cc(self):
+        pass
+
     def get_one_pa_timings(self, day):
-        # setting up selenium
-        driver = webdriver.Chrome(
-            "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe"
+
+        driver = self.__get_driver(
+            "chrome",
+            "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
         )
 
         # Connecting to the page
         driver.get("https://www.onepa.sg/facilities/4020CCMCPA-BM")
+
+        for i in range(76):
+            self.__get_timing_for_cc()
+            self.__go_to_next_cc()
+
+        self.__get_timing_for_cc()
 
         # Click to open drop-down
         driver.find_element_by_xpath("//*[@id='content_0_tbDatePicker']").click()

@@ -1,6 +1,7 @@
 import datetime
 import requests
 from bs4 import BeautifulSoup
+from one_pa_timings import OnePaTiming
 
 
 def active_sg():
@@ -28,6 +29,8 @@ def get_data_from_active_sg(date, time_from, time_till):
 
 def get_data_from_pa(date, time_from, time_till):
     # Todo: Get timing data from all of pa badminton courts
+    one_pa_timing = OnePaTiming()
+    one_pa_timing.get_one_pa_timings(18)
     # Todo: Match the timing data from all of the courts to the timing data that we are interested in
     # Todo: return the list of data that matches in some reasonable format
     return 0
