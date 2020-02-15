@@ -1,4 +1,6 @@
 import enum
+import time
+from multiprocessing import Pool
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -71,6 +73,7 @@ class OnePaTiming:
         cc_available_slots = self.__get_available_courts_at_cc(driver)
         cc_available_timings = [cc_timings[int(i)] for i in cc_available_slots]
         print("Available timings at", cc_name, ":\n", cc_available_timings)
+        return cc_name, cc_available_timings
         # Todo: get the timing that the available courts correspond too
         # Todo: go through all the courts that the cc has to offer
         # Todo: store the results for the timings in each CC somewhere
@@ -88,7 +91,7 @@ class OnePaTiming:
         cc_selector[cc_to_check].click()
 
     def get_one_pa_timings(self, day):
-
+        start = time.time()
         driver = self.__get_driver(
             "chrome",
             "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
@@ -98,11 +101,19 @@ class OnePaTiming:
         driver.get(STARTING_URL)
 
         self.__click_date(driver, day)
-
         print("reached new date")
+
+        all_cc_available_timing = dict()
         driver.implicitly_wait(PAUSE)
         for i in range(NUMBER_OF_CC_WITH_BADMINTON_COURT):
-            self.__get_timing_for_cc(driver)
+            cc_name, cc_timing = self.__get_timing_for_cc(driver)
+            all_cc_available_timing[cc_name] = cc_timing
             self.__go_to_next_cc(driver, i + 1)
             driver.implicitly_wait(5)
-        self.__get_timing_for_cc(driver)
+        cc_name, cc_timing = self.__get_timing_for_cc(driver)
+        all_cc_available_timing[cc_name] = cc_timing
+
+        end = time.time()
+        print("time taken", end - start)
+
+        return all_cc_available_timing
