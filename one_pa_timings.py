@@ -1,5 +1,10 @@
-from selenium import webdriver
 import enum
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
+NUMBER_OF_CC_WITH_BADMINTON_COURT = 75
+PAUSE = 5
 
 
 class Browser(enum.Enum):
@@ -14,28 +19,7 @@ class OnePaTiming:
         if browser == Browser.FIREFOX.value:
             return webdriver.Firefox(driver_path)
 
-    def __get_timing_for_cc(self):
-        pass
-
-    def __go_to_next_cc(self):
-        pass
-
-    def get_one_pa_timings(self, day):
-
-        driver = self.__get_driver(
-            "chrome",
-            "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
-        )
-
-        # Connecting to the page
-        driver.get("https://www.onepa.sg/facilities/4020CCMCPA-BM")
-
-        for i in range(76):
-            self.__get_timing_for_cc()
-            self.__go_to_next_cc()
-
-        self.__get_timing_for_cc()
-
+    def __click_date(self, driver, day):
         # Click to open drop-down
         driver.find_element_by_xpath("//*[@id='content_0_tbDatePicker']").click()
 
@@ -52,11 +36,9 @@ class OnePaTiming:
                 dates.click()
                 break
 
+    def __get_timing_for_cc(self, driver):
         # Finding available courst for the day
-        print("reached new date")
-        driver.implicitly_wait(5)
         courts = driver.find_elements_by_xpath(".//*[@id='facTable1']/div/span")
-        print("courts found")
         court_checked = 0
         for court in courts:
             court_checked += 1
@@ -65,9 +47,39 @@ class OnePaTiming:
                 print(
                     court.find_element_by_xpath(".//div/input").get_attribute("id")[-1]
                 )
+        print("num of court checked", court_checked)
         # Todo: get the timing that the available courts correspond too
         # Todo: go through all the courts that the cc has to offer
         # Todo: store the results for the timings in each CC somewhere
         # Todo: return the result for the timings in each CC
 
-        print(court_checked)
+    def __go_to_next_cc(self, driver, cc_to_check):
+        cc_selector = driver.find_element_by_xpath(
+            ".//*[@id='select2-content_0_ddlFacilityLocation-container']"
+        )
+        cc_selector.click()
+        cc_selector = driver.find_elements_by_xpath(
+            "//*[@id='content_0_ddlFacilityLocation']/option"
+        )
+        driver.implicitly_wait(PAUSE)
+        cc_selector[cc_to_check].click()
+
+    def get_one_pa_timings(self, day):
+
+        driver = self.__get_driver(
+            "chrome",
+            "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
+        )
+
+        # Connecting to the page
+        driver.get("https://www.onepa.sg/facilities/4020CCMCPA-BM")
+
+        self.__click_date(driver, day)
+
+        print("reached new date")
+        driver.implicitly_wait(PAUSE)
+        for i in range(NUMBER_OF_CC_WITH_BADMINTON_COURT):
+            self.__get_timing_for_cc(driver)
+            self.__go_to_next_cc(driver, i + 1)
+            driver.implicitly_wait(5)
+        self.__get_timing_for_cc(driver)
