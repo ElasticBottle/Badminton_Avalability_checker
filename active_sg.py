@@ -8,21 +8,29 @@
 #     with requests.Session() as session:
 #         post = session.post(LOGIN_URL, data=payload)
 #         print(post, "\n\n")
-#         r = session.get(REQUEST_URL)
-#         soup = BeautifulSoup(r.content, "html.parser")
 #         results = soup.find(id="formTimeslots")
 #         print(results.prettify())
+#         r = session.get(REQUEST_URL)
+#         soup = BeautifulSoup(r.content, "html.parser")
+
+
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
 from selenium_base import SeleniumBase
 
-STARTING_URL = ""
+from user_info import UserInfo
+
+STARTING_URL = "https://members.myactivesg.com/auth?redirect=%2Fprofile"
+NUMBER_OF_BADMINTON_LOC = 295
+PAUSE = 5
 
 
 class ActiveSG(SeleniumBase):
     def __init__(self):
         super().__init__(STARTING_URL)
 
-    def _login(self, driver):
+    def _login(self, driver, user, password):
         """
         Logs into the website to perform scraping
 
@@ -30,7 +38,34 @@ class ActiveSG(SeleniumBase):
             driver (WebDriver): Contains either firefox or chrome webdriver.
                 Needed for use in interacting with the webpage that we want to log into
         """
-        raise NotImplementedError
+        email_field = driver.find_element_by_xpath("//*[@id='email']")
+        email_field.send_keys(user)
+        password_field = driver.find_element_by_xpath("//*[@id = 'password']")
+        password_field.send_keys(password)
+        submit = driver.find_element_by_xpath("//*[@id = 'btn-submit-login']")
+        submit.click()
+
+    def _navigate_to_badminton_booking(self, driver):
+        driver.get(
+            "https://members.myactivesg.com/facilities/view/activity/18/venue/968?"
+        )
+
+    def _get_right_date(self, driver, day):
+        # Getting the elements in the date picker and clicking selected date
+        elements = driver.find_elements_by_xpath(
+            ".//*[@id='ui-datepicker-div']/table/tbody/tr/td/a"
+        )
+
+        clicked = False
+        for date in elements:
+            if (
+                date.is_enabled()
+                and date.is_displayed()
+                and str(date.get_attribute("innerText")) == str(day)
+            ):
+                date.click()
+                clicked = True
+        return clicked
 
     def _click_date(self, driver, day):
         """
@@ -44,7 +79,23 @@ class ActiveSG(SeleniumBase):
         Return:
             Bool: True for a successful click on the specified date, False otherwise
         """
-        raise NotImplementedError
+        # Click to open drop-down
+        driver.find_element_by_xpath("//*[@class='datepicker hasDatepicker']").click()
+
+        clicked = self._get_right_date(driver, day)
+
+        if not clicked:
+            next_page_btns = driver.find_elements_by_xpath(
+                "//*[@id='ui-datepicker-div']/div/a"
+            )
+            for btn in next_page_btns:
+                if (
+                    btn.get_attribute("class") == "ui-datepicker-prev ui-corner-all"
+                    or btn.get_attribute("class") == "ui-datepicker-next ui-corner-all"
+                ):
+                    btn.click()
+                    return self._get_right_date(driver, day)
+        return clicked
 
     def _get_court_loc_name(self, driver):
         """
@@ -58,7 +109,11 @@ class ActiveSG(SeleniumBase):
         Returns:
             string: The name of the court location in which the badminton court is being checked for
         """
-        raise NotImplementedError
+        court_name = driver.find_element_by_xpath(
+            "//*[@id='facbookpage']/div/div/div/div/p"
+        ).get_attribute("innerText")
+        print(court_name)
+        return court_name
 
     def _get_timing_structure_at_court_loc(self, driver):
         """
@@ -71,7 +126,7 @@ class ActiveSG(SeleniumBase):
         Returns:
             list<string>: A collection of the timings
         """
-        raise NotImplementedError
+        return []
 
     def _get_available_courts_at_court_loc(self, driver):
         """
@@ -85,7 +140,7 @@ class ActiveSG(SeleniumBase):
             list<string>: A collection of the court timing indexes that is available.
                 Timing timing to be retrieved from _get_timing_structure_at_court_loc() function.
         """
-        raise NotImplementedError
+        return []
 
     def _get_timing_for_court_loc(self, driver):
         """
@@ -99,7 +154,7 @@ class ActiveSG(SeleniumBase):
             string: Contains the name of the court location
             list<string>: Containing the timings whihc are available at the court location
         """
-        raise NotImplementedError
+        return super()._get_timing_for_court_loc(driver)
 
     def _go_to_court_loc(self, driver, court_loc_to_check):
         """
@@ -118,3 +173,15 @@ class ActiveSG(SeleniumBase):
             "chrome",
             "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
         )
+
+        self._login(driver, UserInfo.active_sg_user, UserInfo.active_sg_pass)
+        self._navigate_to_badminton_booking(driver)
+        self._click_date(driver, day)
+        print("reached new date")
+
+        all_courts_available_timing = dict()
+        driver.implicitly_wait(PAUSE)
+        for i in range(NUMBER_OF_BADMINTON_LOC):
+            self._get_timing_for_court_loc(driver)
+            self._go_to_court_loc(driver, i + 1)
+        self._get_timing_for_court_loc(driver)
