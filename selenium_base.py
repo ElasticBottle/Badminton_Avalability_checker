@@ -29,9 +29,30 @@ class SeleniumBase(ABC):
         # Gets the webdriver and connects to the page of interest
 
         if browser == self._Browser.CHROME.value:
-            return webdriver.Chrome(driver_path).get(self.baseURL)
+            driver = webdriver.Chrome(driver_path)
         if browser == self._Browser.FIREFOX.value:
-            return webdriver.Firefox(driver_path).get(self.baseURL)
+            driver = webdriver.Firefox(driver_path)
+        driver.get(self.baseURL)
+        return driver
+
+    @staticmethod
+    def search_for_court_timings(self, driver, day, num_badminton_court, delay):
+        self._click_date(driver, day)
+        print("reached new date")
+
+        all_available_timing = dict()
+        driver.implicitly_wait(delay)
+
+        # ? Add multi threading to launch multiple web browsers at once and speed up search
+        for i in range(num_badminton_court):
+            court_name, court_timing = self._get_timing_for_court_loc(driver)
+            all_available_timing[court_name] = court_timing
+            self._go_to_court_loc(driver, i + 1)
+            driver.implicitly_wait(delay)
+        court_name, court_timing = self._get_timing_for_court_loc(driver)
+        all_available_timing[court_name] = court_timing
+
+        return all_available_timing
 
     @abstractmethod
     def _login(self, driver):
@@ -41,6 +62,21 @@ class SeleniumBase(ABC):
          Args:
             driver (WebDriver): Contains either firefox or chrome webdriver.
                 Needed for use in interacting with the webpage that we want to log into
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _get_right_date(self, driver, day):
+        """
+        Searches through the list of available dates and attempts to click the day specified if possible
+
+        Args:
+            driver (WebDriver): Contains either firefox or chrome webdriver.
+                Needed for use in interacting with the webpages
+            day (int): specifies the day of the month that is to be checked for badminton court availability
+        
+        Return:
+            Bool: True for a successful click on the specified date, False otherwise
         """
         raise NotImplementedError
 
@@ -57,7 +93,7 @@ class SeleniumBase(ABC):
         Return:
             Bool: True for a successful click on the specified date, False otherwise
         """
-        raise NotImplementedError
+        return NotImplementedError
 
     @abstractmethod
     def _get_court_loc_name(self, driver):
@@ -116,7 +152,12 @@ class SeleniumBase(ABC):
             string: Contains the name of the court location
             list<string>: Containing the timings whihc are available at the court location
         """
-        raise NotImplementedError
+        court_name = self._get_court_loc_name(driver)
+        court_timings = self._get_timing_structure_at_court_loc(driver)
+        court_available_slots = self._get_available_courts_at_court_loc(driver)
+        court_available_timings = [court_timings[int(i)] for i in court_available_slots]
+        print("Available timings at", court_name, ":\n", court_available_timings)
+        return court_name, court_available_timings
 
     @abstractmethod
     def _go_to_court_loc(self, driver, court_loc_to_check):
