@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
 NUMBER_OF_CC_WITH_BADMINTON_COURT = 75
-PAUSE = 5
+PAUSE = 10
 STARTING_URL = "https://www.onepa.sg/facilities/4020CCMCPA-BM"
 
 
@@ -20,6 +20,23 @@ class OnePaTiming(SeleniumBase):
 
     def _login(self, driver):
         pass
+
+    def _get_right_date(self, driver, day):
+        # Getting the elements in the date picker and clicking selected date
+        elements = driver.find_elements_by_xpath(
+            ".//*[@id='ui-datepicker-div']/table/tbody/tr/td/a"
+        )
+
+        clicked = False
+        for date in elements:
+            if (
+                date.is_enabled()
+                and date.is_displayed()
+                and str(date.get_attribute("innerText")) == str(day)
+            ):
+                date.click()
+                clicked = True
+        return clicked
 
     def _click_date(self, driver, day):
         """
@@ -35,20 +52,13 @@ class OnePaTiming(SeleniumBase):
         """
         # Click to open drop-down
         driver.find_element_by_xpath("//*[@id='content_0_tbDatePicker']").click()
-
-        # Getting the elements in the date picker and clicking selected date
-        elements = driver.find_elements_by_xpath(
-            ".//*[@id='ui-datepicker-div']/table/tbody/tr/td/a"
-        )
-        for dates in elements:
-            if (
-                dates.is_enabled()
-                and dates.is_displayed()
-                and str(dates.get_attribute("innerText")) == str(day)
-            ):
-                dates.click()
-                return True
-        return False
+        clicked = self._get_right_date(driver, day)
+        if not clicked:
+            driver.find_element_by_xpath(
+                "//*[@id='ui-datepicker-div']/div/a[@class = 'ui-datepicker-next ui-corner-all']"
+            ).click()
+            clicked = self._get_right_date(driver, day)
+        return clicked
 
     def _get_court_loc_name(self, driver):
         """
@@ -123,12 +133,7 @@ class OnePaTiming(SeleniumBase):
             string: Contains the name of the CC
             list<string>: Containing the timings whihc are available at the CC
         """
-        cc_name = self._get_court_loc_name(driver)
-        cc_timings = self._get_timing_structure_at_court_loc(driver)
-        cc_available_slots = self._get_available_courts_at_court_loc(driver)
-        cc_available_timings = [cc_timings[int(i)] for i in cc_available_slots]
-        print("Available timings at", cc_name, ":\n", cc_available_timings)
-        return cc_name, cc_available_timings
+        return super()._get_timing_for_court_loc(driver)
 
     def _go_to_court_loc(self, driver, court_loc_to_check):
         """
@@ -166,20 +171,9 @@ class OnePaTiming(SeleniumBase):
             "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
         )
 
-        self._click_date(driver, day)
-        print("reached new date")
-
-        all_cc_available_timing = dict()
-        driver.implicitly_wait(PAUSE)
-
-        # ? Add multi threading to launch multiple web browsers at once and speed up search
-        for i in range(NUMBER_OF_CC_WITH_BADMINTON_COURT):
-            cc_name, cc_timing = self._get_timing_for_court_loc(driver)
-            all_cc_available_timing[cc_name] = cc_timing
-            self._go_to_court_loc(driver, i + 1)
-            driver.implicitly_wait(5)
-        cc_name, cc_timing = self._get_timing_for_court_loc(driver)
-        all_cc_available_timing[cc_name] = cc_timing
+        all_cc_available_timing = super().search_for_court_timings(
+            self, driver, day, NUMBER_OF_CC_WITH_BADMINTON_COURT, PAUSE
+        )
 
         end = time.time()
         print("time taken", end - start)
