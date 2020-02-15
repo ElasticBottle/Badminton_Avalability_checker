@@ -1,7 +1,7 @@
 import enum
 import time
 from multiprocessing import Pool
-
+from selenium_base import SeleniumBase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
@@ -10,36 +10,18 @@ PAUSE = 5
 STARTING_URL = "https://www.onepa.sg/facilities/4020CCMCPA-BM"
 
 
-class Browser(enum.Enum):
-    """
-    Contains the value for the type of browser that may run, firefox or chrome
-    """
-
-    CHROME = "chrome"
-    FIREFOX = "firefox"
-
-
-class OnePaTiming:
+class OnePaTiming(SeleniumBase):
     """
     Allows user to retrieve the list of available timings for all the Community Centers (CC) that offers badminton in Singapore
     """
 
-    def __get_driver(self, browser, driver_path):
-        """
-        Gets the appropriate driver so that Selenium may run based on the browser and driver path specified
+    def __init__(self):
+        super().__init__(STARTING_URL)
 
-        Args:
-            brower (string): Tells selenium which webdriver to initialise.
-                Either "chrome" or "firefox"
-            driver_path (string): Contains the file path to the appropriate selenium driver needed.
-                File path should end with the "/DRIVER_NAME.exe"
-        """
-        if browser == Browser.CHROME.value:
-            return webdriver.Chrome(driver_path)
-        if browser == Browser.FIREFOX.value:
-            return webdriver.Firefox(driver_path)
+    def _login(self, driver):
+        pass
 
-    def __click_date(self, driver, day):
+    def _click_date(self, driver, day):
         """
         Clicks the appropriate date on the one_pa badminton website
 
@@ -68,7 +50,7 @@ class OnePaTiming:
                 return True
         return False
 
-    def __get_cc_name(self, driver):
+    def _get_court_loc_name(self, driver):
         """
         Gets the name of the cc that is being checked for badminton court availability
 
@@ -84,7 +66,7 @@ class OnePaTiming:
             ".//*[@class = 'facilitiesHeader']/a"
         ).get_attribute("innerText")
 
-    def __get_timing_structure_at_cc(self, driver):
+    def _get_timing_structure_at_court_loc(self, driver):
         """
         Retrieves the timing structure at a particular CC
 
@@ -107,7 +89,7 @@ class OnePaTiming:
             timings[i] = timings[i].get_attribute("innerText")
         return timings
 
-    def __get_available_courts_at_cc(self, driver):
+    def _get_available_courts_at_court_loc(self, driver):
         """
         Finds the timing index of the available courts at the particular CC
 
@@ -117,7 +99,7 @@ class OnePaTiming:
         
         Returns:
             list<string>: A collection of the court timing indexes that is available.
-                Timing timing to be retrieved from __get_timing_structure_at_cc() function.
+                Timing timing to be retrieved from _get_timing_structure_at_cc() function.
         """
         # Finding available courst for the day
         courts = driver.find_elements_by_xpath(".//*[@id='facTable1']/div/span")
@@ -129,7 +111,7 @@ class OnePaTiming:
                 )
         return available_courts
 
-    def __get_timing_for_cc(self, driver):
+    def _get_timing_for_court_loc(self, driver):
         """
         Finds the name, timing structure, and available court of the CC
 
@@ -141,14 +123,14 @@ class OnePaTiming:
             string: Contains the name of the CC
             list<string>: Containing the timings whihc are available at the CC
         """
-        cc_name = self.__get_cc_name(driver)
-        cc_timings = self.__get_timing_structure_at_cc(driver)
-        cc_available_slots = self.__get_available_courts_at_cc(driver)
+        cc_name = self._get_court_loc_name(driver)
+        cc_timings = self._get_timing_structure_at_court_loc(driver)
+        cc_available_slots = self._get_available_courts_at_court_loc(driver)
         cc_available_timings = [cc_timings[int(i)] for i in cc_available_slots]
         print("Available timings at", cc_name, ":\n", cc_available_timings)
         return cc_name, cc_available_timings
 
-    def __go_to_cc(self, driver, cc_to_check):
+    def _go_to_court_loc(self, driver, court_loc_to_check):
         """
         Changes the badminton booking page for a particular CC that @param driver is at to the badminton booking page for another CC
 
@@ -166,9 +148,9 @@ class OnePaTiming:
             "//*[@id='content_0_ddlFacilityLocation']/option"
         )
         driver.implicitly_wait(PAUSE)
-        cc_selector[cc_to_check].click()
+        cc_selector[court_loc_to_check].click()
 
-    def get_one_pa_timings(self, day):
+    def get_available_timings(self, day):
         """
         Checks all CC with badminton courts for their available timings
 
@@ -179,15 +161,12 @@ class OnePaTiming:
             dictionary: Contains all the names of CC with badminton courts mapped to their list of available timings.
         """
         start = time.time()
-        driver = self.__get_driver(
+        driver = self._get_driver(
             "chrome",
             "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
         )
 
-        # Connecting to the page
-        driver.get(STARTING_URL)
-
-        self.__click_date(driver, day)
+        self._click_date(driver, day)
         print("reached new date")
 
         all_cc_available_timing = dict()
@@ -195,11 +174,11 @@ class OnePaTiming:
 
         # ? Add multi threading to launch multiple web browsers at once and speed up search
         for i in range(NUMBER_OF_CC_WITH_BADMINTON_COURT):
-            cc_name, cc_timing = self.__get_timing_for_cc(driver)
+            cc_name, cc_timing = self._get_timing_for_court_loc(driver)
             all_cc_available_timing[cc_name] = cc_timing
-            self.__go_to_cc(driver, i + 1)
+            self._go_to_court_loc(driver, i + 1)
             driver.implicitly_wait(5)
-        cc_name, cc_timing = self.__get_timing_for_cc(driver)
+        cc_name, cc_timing = self._get_timing_for_court_loc(driver)
         all_cc_available_timing[cc_name] = cc_timing
 
         end = time.time()
