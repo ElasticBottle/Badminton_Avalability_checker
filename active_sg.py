@@ -46,6 +46,9 @@ class ActiveSG(SeleniumBase):
         submit.click()
 
     def _navigate_to_badminton_booking(self, driver):
+        """
+        Navigates the driver to the badminton booking page for active sg
+        """
         driver.get(
             "https://members.myactivesg.com/facilities/view/activity/18/venue/968?"
         )
