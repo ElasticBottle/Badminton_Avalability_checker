@@ -51,7 +51,6 @@ class OnePaTiming:
         # Adding the timing to the list
         for i in range(len(timings)):
             timings[i] = timings[i].get_attribute("innerText")
-        print(timings)
         return timings
 
     def __get_available_courts_at_cc(self, driver):
@@ -59,7 +58,6 @@ class OnePaTiming:
         courts = driver.find_elements_by_xpath(".//*[@id='facTable1']/div/span")
         available_courts = list()
         for court in courts:
-            print("checking court availability")
             if court.get_attribute("class") == "slots normal":
                 available_courts.append(
                     court.find_element_by_xpath(".//div/input").get_attribute("id")[-1]
@@ -68,9 +66,10 @@ class OnePaTiming:
 
     def __get_timing_for_cc(self, driver):
         cc_name = self.__get_cc_name(driver)
-        print(cc_name)
-        self.__get_timing_structure_at_cc(driver)
-        self.__get_available_courts_at_cc(driver)
+        cc_timings = self.__get_timing_structure_at_cc(driver)
+        cc_available_slots = self.__get_available_courts_at_cc(driver)
+        cc_available_timings = [cc_timings[int(i)] for i in cc_available_slots]
+        print("Available timings at", cc_name, ":\n", cc_available_timings)
         # Todo: get the timing that the available courts correspond too
         # Todo: go through all the courts that the cc has to offer
         # Todo: store the results for the timings in each CC somewhere
