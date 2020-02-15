@@ -2,11 +2,14 @@ import datetime
 import requests
 from bs4 import BeautifulSoup
 from one_pa_timings import OnePaTiming
+from active_sg import ActiveSG
 from timing_matcher import TimingMatcher
 
 
 def get_data_from_active_sg(date, time_from, time_till):
     # TODO: Get timing data from all of active sg badminton courts
+    active_sg_timings = ActiveSG()
+    active_sg_timings.get_available_timings(22)
     # TODO: Match the timing data from all of the courts to the timing data that we are interested in
     # TODO: return the list of data that matches in some reasonable format
     return 0
@@ -14,7 +17,7 @@ def get_data_from_active_sg(date, time_from, time_till):
 
 def get_data_from_pa(date, time_from, time_till):
     one_pa_timing = OnePaTiming()
-    available_timings = one_pa_timing.get_available_timings(18)
+    available_timings = one_pa_timing.get_available_timings(1)
     # TODO: Match the timing data from all of the courts to the timing data that we are interested in
     matched_times = TimingMatcher()
     matched_times.match_timings(available_timings, time_from, time_till)
@@ -28,7 +31,7 @@ def main():
     time_till = datetime.time(17, 00, 00)
     active_sg_slots = get_data_from_active_sg(date, time_from, time_till)
     pa_slots = get_data_from_pa(date, time_from, time_till)
-    print(active_sg_slots, "\n\n", pa_slots)
+    # print(active_sg_slots, "\n\n", pa_slots)
 
 
 if __name__ == "__main__":
