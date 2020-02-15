@@ -5,6 +5,7 @@ from selenium.webdriver.common.keys import Keys
 
 NUMBER_OF_CC_WITH_BADMINTON_COURT = 75
 PAUSE = 5
+STARTING_URL = "https://www.onepa.sg/facilities/4020CCMCPA-BM"
 
 
 class Browser(enum.Enum):
@@ -56,10 +57,10 @@ class OnePaTiming:
     def __get_available_courts_at_cc(self, driver):
         # Finding available courst for the day
         courts = driver.find_elements_by_xpath(".//*[@id='facTable1']/div/span")
-        available_courts = list()
+        available_courts = set()
         for court in courts:
             if court.get_attribute("class") == "slots normal":
-                available_courts.append(
+                available_courts.add(
                     court.find_element_by_xpath(".//div/input").get_attribute("id")[-1]
                 )
         return available_courts
@@ -94,7 +95,7 @@ class OnePaTiming:
         )
 
         # Connecting to the page
-        driver.get("https://www.onepa.sg/facilities/4020CCMCPA-BM")
+        driver.get(STARTING_URL)
 
         self.__click_date(driver, day)
 
