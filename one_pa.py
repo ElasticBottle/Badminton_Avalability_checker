@@ -188,7 +188,7 @@ class OnePa(SeleniumBase):
         all_available_timing = dict()
 
         # ? Add multi threading to launch multiple web browsers at once and speed up search
-        for i in range(NUMBER_OF_CC_WITH_BADMINTON_COURT):
+        for i in range(2):
             court_name, court_timing = self._get_timing_for_court_loc(driver)
             all_available_timing[court_name] = court_timing
             self._go_to_court_loc(driver, i + 1)
@@ -197,4 +197,5 @@ class OnePa(SeleniumBase):
 
         end = time.time()
         print("time taken", end - start)
+        driver.quit()
         return all_available_timing

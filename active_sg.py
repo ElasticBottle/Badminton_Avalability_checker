@@ -214,5 +214,5 @@ class ActiveSG(SeleniumBase):
             court_name, available_timings = self._get_timing_for_court_loc(driver)
             all_available_timing.update({court_name: available_timings})
             driver.back()
-
+        driver.quit()
         return all_available_timing
