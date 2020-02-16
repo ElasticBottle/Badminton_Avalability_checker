@@ -15,10 +15,13 @@
 
 
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from selenium_base import SeleniumBase
-
 from user_info import UserInfo
 
 STARTING_URL = "https://members.myactivesg.com/auth?redirect=%2Fprofile"
@@ -49,9 +52,7 @@ class ActiveSG(SeleniumBase):
         """
         Navigates the driver to the badminton booking page for active sg
         """
-        driver.get(
-            "https://members.myactivesg.com/facilities/view/activity/18/venue/292?"
-        )
+        driver.get("https://members.myactivesg.com/facilities")
 
     def _get_right_date(self, driver, day):
         # Getting the elements in the date picker and clicking selected date
@@ -70,9 +71,9 @@ class ActiveSG(SeleniumBase):
                 clicked = True
         return clicked
 
-    def _click_date(self, driver, day):
+    def _set_date(self, driver, day):
         """
-        Clicks the appropriate date on the one_pa badminton website
+        Clicks the appropriate date on the actve sg badminton website
 
         Args:
             driver (WebDriver): Contains either firefox or chrome webdriver.
@@ -82,23 +83,42 @@ class ActiveSG(SeleniumBase):
         Return:
             Bool: True for a successful click on the specified date, False otherwise
         """
-        # Click to open drop-down
-        driver.find_element_by_xpath("//*[@class='datepicker hasDatepicker']").click()
+        # Click on date picker
+        driver.find_element_by_xpath('//*[@id="date_filter"]').click()
 
-        clicked = self._get_right_date(driver, day)
+        # Get list of dates
+        dates = driver.find_elements_by_xpath(
+            '//*[@id="ui-datepicker-div"]/table/tbody/tr/td/a'
+        )
 
+        current_date = 0
+        for date in dates:
+            if (
+                date.get_attribute("class")
+                == "ui-state-default ui-state-highlight ui-state-active ui-state-hover"
+            ):
+                current_date = date.get_attribute("innerText")
+                if int(current_date) > day:
+                    # Go to next month
+                    driver.find_element_by_xpath(
+                        '//*[@id="ui-datepicker-div"]/div/a[@class = "ui-datepicker-next ui-corner-all"]'
+                    ).click()
+
+                return self._get_right_date(driver, day)
+
+    def _set_activity(self, driver):
+        driver.find_element_by_xpath('//*[@id="activity_filter_chosen"]').click()
+        driver.find_elements_by_xpath('//*[@id="activity_filter_chosen"]/div/ul/li')[
+            1
+        ].click()
+
+    def _set_date_and_activity(self, driver, day):
+        self._set_activity(driver)
+        clicked = self._set_date(driver, day)
         if not clicked:
-            next_page_btns = driver.find_elements_by_xpath(
-                "//*[@id='ui-datepicker-div']/div/a"
-            )
-            for btn in next_page_btns:
-                if (
-                    btn.get_attribute("class") == "ui-datepicker-prev ui-corner-all"
-                    or btn.get_attribute("class") == "ui-datepicker-next ui-corner-all"
-                ):
-                    btn.click()
-                    return self._get_right_date(driver, day)
-        return clicked
+            print("Date is too far into the future to be booked!")
+            driver.quit()
+        driver.find_element_by_xpath('//*[@id="search"]').click()
 
     def _get_court_loc_name(self, driver):
         """
@@ -112,37 +132,16 @@ class ActiveSG(SeleniumBase):
         Returns:
             string: The name of the court location in which the badminton court is being checked for
         """
-        court_name = driver.find_element_by_xpath(
-            "//*[@id='facbookpage']/div/div/div/div/p"
-        ).get_attribute("innerText")
-        print(court_name)
-        return court_name
-
-    def _get_timing_structure_at_court_loc(self, driver):
-        """
-        Retrieves the timing structure at a particular court location
-
-        Args:
-            driver (WebDriver): Contains either firefox or chrome webdriver.
-                driver should be set to the badminton booking page of the court location that timing is to be retrieved for.
-        
-        Returns:
-            list<string>: A collection of the timings
-        """
-        timings = set()
-        timeslots = driver.find_element_by_xpath('//*[@id="formTimeslots"]')
-        timeslots = timeslots.find_elements_by_xpath(".//div/div/div/div")
-        for i in range(15):
-            timing = (
-                timeslots[i]
-                .find_element_by_xpath(".//label")
-                .get_attribute("innerText")
+        court_name = (
+            WebDriverWait(driver, PAUSE)
+            .until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//*[@id='facbookpage']/div/div/div/div/p")
+                )
             )
-            if timing != "Select another venue":
-                timings.add(timing)
-            else:
-                return timings
-        return timings
+            .get_attribute("innerText")
+        )
+        return court_name
 
     def _get_available_courts_at_court_loc(self, driver):
         """
@@ -161,12 +160,11 @@ class ActiveSG(SeleniumBase):
         timeslots = timeslots.find_elements_by_xpath(".//div/div/div/div")
         for time in timeslots:
             available = time.find_element_by_xpath(".//input").get_attribute("name")
-            print(available)
             if available == "timeslots[]":
-                availability.add(time.find_element_by_xpath(".//label")).get_attribute(
+                timing = time.find_element_by_xpath(".//label").get_attribute(
                     "innerText"
                 )
-        print(availability)
+                availability.add(timing)
         return availability
 
     def _get_timing_for_court_loc(self, driver):
@@ -181,23 +179,9 @@ class ActiveSG(SeleniumBase):
             string: Contains the name of the court location
             list<string>: Containing the timings whihc are available at the court location
         """
-        return super()._get_timing_for_court_loc(driver)
-
-    def _go_to_court_loc(self, driver, court_loc_to_check):
-        """
-        Changes the badminton booking page for a particular court location that @param driver is at to the badminton booking page for another court location
-
-        Args:
-            driver (WebDriver): Contains either firefox or chrome webdriver.
-                driver should be set to the badminton booking page of any court location
-            court_loc_to_check (int): The index of the particular court location that you want to navigate too.
-                court_loc_to_check should be between 0 - 75 
-        """
-        options = driver.find_element_by_xpath('//*[@id="facVenueSelection"]')
-        options.click()
-        options = driver.find_elements_by_xpath('//*[@id="facVenueSelection"]/option')
-        driver.implicitly_wait(PAUSE)
-        options[court_loc_to_check].click()
+        court_name = self._get_court_loc_name(driver)
+        available_timings = self._get_available_courts_at_court_loc(driver)
+        return court_name, available_timings
 
     def get_available_timings(self, day):
         driver = self._get_driver(
@@ -207,8 +191,29 @@ class ActiveSG(SeleniumBase):
 
         self._login(driver, UserInfo.active_sg_user, UserInfo.active_sg_pass)
         self._navigate_to_badminton_booking(driver)
-        all_available_timing = super().search_for_court_timings(
-            self, driver, day, NUMBER_OF_BADMINTON_LOC, PAUSE
+        all_available_timing = dict()
+        self._set_date_and_activity(driver, day)
+
+        available_courts = driver.find_elements_by_xpath(
+            './/*[@id = "main"]/div/div/article/div/section/ul/li'
         )
+
+        for i in range(len(available_courts)):
+            element = WebDriverWait(driver, PAUSE).until(
+                EC.element_to_be_clickable(
+                    (
+                        By.XPATH,
+                        './/*[@id = "main"]/div/div/article/div/section/ul/li['
+                        + str(i + 1)
+                        + "]",
+                    )
+                )
+            )
+            driver.execute_script("arguments[0].scrollIntoView();", element)
+            element.click()
+
+            court_name, available_timings = self._get_timing_for_court_loc(driver)
+            all_available_timing.update({court_name: available_timings})
+            driver.back()
 
         return all_available_timing
