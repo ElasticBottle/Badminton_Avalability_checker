@@ -14,6 +14,8 @@
 #         soup = BeautifulSoup(r.content, "html.parser")
 
 
+import time
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -214,5 +216,6 @@ class ActiveSG(SeleniumBase):
             court_name, available_timings = self._get_timing_for_court_loc(driver)
             all_available_timing.update({court_name: available_timings})
             driver.back()
+            time.sleep(1)
         driver.quit()
         return all_available_timing
