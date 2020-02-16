@@ -1,4 +1,5 @@
 import enum
+import pandas as pd
 
 
 class Match(enum.Enum):
@@ -26,6 +27,20 @@ class TimingMatcher:
                 court_matches.update({court_match, court_match_list})
         return court_matches
 
-    def group_by_timings(self, available_timings):
+    def group_by_timings_active_sg(self, available_timings):
         # TODO: group the courts into timing buckets rather than by court name
-        pass
+        timing_dict = dict()
+        for court_name, court_timings in available_timings.items():
+            for timing in court_timings:
+                current_courts_at_this_timing = timing_dict.get(timing, [])
+                current_courts_at_this_timing.append(court_name)
+                timing_dict.update({timing: current_courts_at_this_timing})
+        timing_df = pd.DataFrame.from_dict(timing_dict, orient="index")
+        timing_df.index = pd.to_datetime(timing_df.index)
+        timing_df = timing_df.sort_index()
+        print(timing_df.head(10))
+
+    def group_by_timings_on_pa(self, available_timings):
+        # TODO: group the courts into timing buckets rather than by court name
+        timing_df = pd.DataFrame(available_timings)
+        print(timing_df)
