@@ -1,4 +1,5 @@
 import enum
+import datetime
 import pandas as pd
 
 
@@ -27,8 +28,8 @@ class TimingMatcher:
                 court_matches.update({court_match, court_match_list})
         return court_matches
 
-    def group_by_timings_active_sg(self, available_timings):
-        # TODO: group the courts into timing buckets rather than by court name
+    def group_by_timings_active_sg(self, month, day, available_timings):
+
         timing_dict = dict()
         for court_name, court_timings in available_timings.items():
             for timing in court_timings:
@@ -37,10 +38,42 @@ class TimingMatcher:
                 timing_dict.update({timing: current_courts_at_this_timing})
         timing_df = pd.DataFrame.from_dict(timing_dict, orient="index")
         timing_df.index = pd.to_datetime(timing_df.index)
+        timing_df.index = timing_df.index.map(
+            lambda t: t.replace(year=datetime.date.today().year, month=month, day=day)
+        )
         timing_df = timing_df.sort_index()
-        print(timing_df.head(10))
-
-    def group_by_timings_on_pa(self, available_timings):
-        # TODO: group the courts into timing buckets rather than by court name
-        timing_df = pd.DataFrame(available_timings)
         print(timing_df)
+        return timing_df
+
+    def _split_timing_into_hourly(self, timings, month, day):
+        year = datetime.date.today().year
+
+        start = pd.to_datetime(timings[0]).replace(year=year, month=month, day=day)
+        end = pd.to_datetime(timings[1]).replace(year=year, month=month, day=day)
+        diff = end - start
+        num_hours = divmod(diff.seconds, 3600)[0]
+
+        if num_hours == 1:
+            return [start]
+        return [
+            start,
+            (start + datetime.timedelta(hours=1)).replace(
+                year=year, month=month, day=day
+            ),
+        ]
+
+    def group_by_timings_on_pa(self, month, day, available_timings):
+        timing_dict = dict()
+        for court_name, court_timing in available_timings.items():
+            for timing in court_timing:
+                timing = timing.split(" - ")
+                timing = self._split_timing_into_hourly(timing, month, day)
+                for time in timing:
+                    current_courts_at_this_timing = timing_dict.get(time, [])
+                    current_courts_at_this_timing.append(court_name)
+                    timing_dict.update({time: current_courts_at_this_timing})
+
+        timing_df = pd.DataFrame.from_dict(timing_dict, orient="index")
+        timing_df = timing_df.sort_index()
+        print(timing_df)
+        return timing_df
