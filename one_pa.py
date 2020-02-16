@@ -1,9 +1,13 @@
-import enum
 import time
 from multiprocessing import Pool
-from selenium_base import SeleniumBase
+
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+from selenium_base import SeleniumBase
 
 NUMBER_OF_CC_WITH_BADMINTON_COURT = 75
 PAUSE = 10
@@ -18,16 +22,12 @@ class OnePa(SeleniumBase):
     def __init__(self):
         super().__init__(STARTING_URL)
 
-    def _login(self, driver):
-        pass
-
     def _get_right_date(self, driver, day):
         # Getting the elements in the date picker and clicking selected date
         elements = driver.find_elements_by_xpath(
             ".//*[@id='ui-datepicker-div']/table/tbody/tr/td/a"
         )
 
-        clicked = False
         for date in elements:
             if (
                 date.is_enabled()
@@ -35,8 +35,8 @@ class OnePa(SeleniumBase):
                 and str(date.get_attribute("innerText")) == str(day)
             ):
                 date.click()
-                clicked = True
-        return clicked
+                return True
+        return False
 
     def _click_date(self, driver, day):
         """
@@ -53,6 +53,7 @@ class OnePa(SeleniumBase):
         # Click to open drop-down
         driver.find_element_by_xpath("//*[@id='content_0_tbDatePicker']").click()
         clicked = self._get_right_date(driver, day)
+        print("first attempt to click date", clicked)
         if not clicked:
             driver.find_element_by_xpath(
                 "//*[@id='ui-datepicker-div']/div/a[@class = 'ui-datepicker-next ui-corner-all']"
@@ -72,9 +73,15 @@ class OnePa(SeleniumBase):
         Returns:
             string: The name of the CC in which the badminton court is being checked for
         """
-        return driver.find_element_by_xpath(
-            ".//*[@class = 'facilitiesHeader']/a"
-        ).get_attribute("innerText")
+        return (
+            WebDriverWait(driver, PAUSE)
+            .until(
+                EC.presence_of_element_located(
+                    (By.XPATH, ".//*[@class = 'facilitiesHeader']/a")
+                )
+            )
+            .get_attribute("innerText")
+        )
 
     def _get_timing_structure_at_court_loc(self, driver):
         """
@@ -177,7 +184,6 @@ class OnePa(SeleniumBase):
         )
 
         self._click_date(driver, day)
-        print("reached new date")
 
         all_available_timing = dict()
 
