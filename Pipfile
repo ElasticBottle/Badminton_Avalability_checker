@@ -12,6 +12,7 @@ requests = "*"
 beautifulsoup4 = "*"
 lxml = "*"
 selenium = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.8"
