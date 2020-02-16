@@ -133,7 +133,12 @@ class OnePaTiming(SeleniumBase):
             string: Contains the name of the CC
             list<string>: Containing the timings whihc are available at the CC
         """
-        return super()._get_timing_for_court_loc(driver)
+        court_name = self._get_court_loc_name(driver)
+        court_timings = self._get_timing_structure_at_court_loc(driver)
+        court_available_slots = self._get_available_courts_at_court_loc(driver)
+        court_available_timings = [court_timings[int(i)] for i in court_available_slots]
+        print("Available timings at", court_name, ":\n", court_available_timings)
+        return court_name, court_available_timings
 
     def _go_to_court_loc(self, driver, court_loc_to_check):
         """
@@ -171,10 +176,19 @@ class OnePaTiming(SeleniumBase):
             "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
         )
 
-        all_cc_available_timing = super().search_for_court_timings(
-            self, driver, day, NUMBER_OF_CC_WITH_BADMINTON_COURT, PAUSE
-        )
+        self._click_date(driver, day)
+        print("reached new date")
+
+        all_available_timing = dict()
+
+        # ? Add multi threading to launch multiple web browsers at once and speed up search
+        for i in range(NUMBER_OF_CC_WITH_BADMINTON_COURT):
+            court_name, court_timing = self._get_timing_for_court_loc(driver)
+            all_available_timing[court_name] = court_timing
+            self._go_to_court_loc(driver, i + 1)
+        court_name, court_timing = self._get_timing_for_court_loc(driver)
+        all_available_timing[court_name] = court_timing
 
         end = time.time()
         print("time taken", end - start)
-        return all_cc_available_timing
+        return all_available_timing
