@@ -51,7 +51,11 @@ class OnePa(SeleniumBase):
             Bool: True for a successful click on the specified date, False otherwise
         """
         # Click to open drop-down
-        driver.find_element_by_xpath("//*[@id='content_0_tbDatePicker']").click()
+        date = WebDriverWait(driver, PAUSE).until(
+            EC.element_to_be_clickable((By.XPATH, "//*[@id='content_0_tbDatePicker']"))
+        )
+        driver.execute_script("arguments[0].scrollIntoView();", date)
+        date.click()
         clicked = self._get_right_date(driver, day)
         print("first attempt to click date", clicked)
         if not clicked:
@@ -122,7 +126,10 @@ class OnePa(SeleniumBase):
         courts = driver.find_elements_by_xpath(".//*[@id='facTable1']/div/span")
         available_courts = set()
         for court in courts:
-            if court.get_attribute("class") == "slots normal":
+            if (
+                court.get_attribute("class") == "slots normal"
+                or court.get_attribute("class") == "slots peak"
+            ):
                 available_courts.add(
                     court.find_element_by_xpath(".//div/input").get_attribute("id")[-1]
                 )
@@ -144,6 +151,7 @@ class OnePa(SeleniumBase):
         court_timings = self._get_timing_structure_at_court_loc(driver)
         court_available_slots = self._get_available_courts_at_court_loc(driver)
         court_available_timings = [court_timings[int(i)] for i in court_available_slots]
+        time.sleep(2)
         print("Available timings at", court_name, ":\n", court_available_timings)
         return court_name, court_available_timings
 
@@ -184,11 +192,11 @@ class OnePa(SeleniumBase):
         )
 
         self._click_date(driver, day)
-
+        print("checking", day, "th Feb for courts")
         all_available_timing = dict()
 
         # ? Add multi threading to launch multiple web browsers at once and speed up search
-        for i in range(2):
+        for i in range(NUMBER_OF_CC_WITH_BADMINTON_COURT):
             court_name, court_timing = self._get_timing_for_court_loc(driver)
             all_available_timing[court_name] = court_timing
             self._go_to_court_loc(driver, i + 1)
