@@ -10,7 +10,7 @@ PAUSE = 10
 STARTING_URL = "https://www.onepa.sg/facilities/4020CCMCPA-BM"
 
 
-class OnePaTiming(SeleniumBase):
+class OnePa(SeleniumBase):
     """
     Allows user to retrieve the list of available timings for all the Community Centers (CC) that offers badminton in Singapore
     """

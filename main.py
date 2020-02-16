@@ -1,20 +1,20 @@
 import datetime
-from one_pa_timings import OnePaTiming
+from one_pa import OnePa
 from active_sg import ActiveSG
 from timing_matcher import TimingMatcher
 
 
 def get_data_from_active_sg(date, time_from, time_till):
-    active_sg_timings = ActiveSG()
-    available_timings = active_sg_timings.get_available_timings(date)
+    active_sg = ActiveSG()
+    available_timings = active_sg.get_available_timings(date)
     # TODO: Match the timing data from all of the courts to the timing data that we are interested in
     # TODO: return the list of data that matches in some reasonable format
     return 0
 
 
 def get_data_from_pa(date, time_from, time_till):
-    one_pa_timing = OnePaTiming()
-    available_timings = one_pa_timing.get_available_timings(1)
+    one_pa = OnePa()
+    available_timings = one_pa.get_available_timings(1)
     # TODO: Match the timing data from all of the courts to the timing data that we are interested in
     matched_times = TimingMatcher()
     matched_times.match_timings(available_timings, time_from, time_till)
