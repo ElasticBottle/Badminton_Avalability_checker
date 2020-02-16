@@ -45,8 +45,7 @@ class ActiveSG(SeleniumBase):
         email_field.send_keys(user)
         password_field = driver.find_element_by_xpath("//*[@id = 'password']")
         password_field.send_keys(password)
-        submit = driver.find_element_by_xpath("//*[@id = 'btn-submit-login']")
-        submit.click()
+        # driver.find_element_by_xpath("//*[@id = 'btn-submit-login']").click()
 
     def _navigate_to_badminton_booking(self, driver):
         """
@@ -191,7 +190,7 @@ class ActiveSG(SeleniumBase):
         )
 
         self._login(driver, UserInfo.get_username(), UserInfo.get_password())
-        time.sleep(PAUSE)
+        time.sleep(2)
         self._navigate_to_badminton_booking(driver)
         all_available_timing = dict()
         self._set_date_and_activity(driver, day)
