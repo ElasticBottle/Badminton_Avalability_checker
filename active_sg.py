@@ -179,6 +179,7 @@ class ActiveSG(SeleniumBase):
         """
         court_name = self._get_court_loc_name(driver)
         available_timings = self._get_available_courts_at_court_loc(driver)
+        print(court_name, ":\n", available_timings)
         return court_name, available_timings
 
     def get_available_timings(self, day):
@@ -196,7 +197,7 @@ class ActiveSG(SeleniumBase):
             './/*[@id = "main"]/div/div/article/div/section/ul/li'
         )
 
-        for i in range(len(available_courts)):
+        for i in range(4):
             court = WebDriverWait(driver, PAUSE).until(
                 EC.element_to_be_clickable(
                     (
