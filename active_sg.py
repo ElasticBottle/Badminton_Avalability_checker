@@ -190,7 +190,8 @@ class ActiveSG(SeleniumBase):
             "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
         )
 
-        self._login(driver, UserInfo.active_sg_user, UserInfo.active_sg_pass)
+        self._login(driver, UserInfo.get_username(), UserInfo.get_password())
+        time.sleep(PAUSE)
         self._navigate_to_badminton_booking(driver)
         all_available_timing = dict()
         self._set_date_and_activity(driver, day)
@@ -199,7 +200,7 @@ class ActiveSG(SeleniumBase):
             './/*[@id = "main"]/div/div/article/div/section/ul/li'
         )
 
-        for i in range(4):
+        for i in range(len(available_courts)):
             court = WebDriverWait(driver, PAUSE).until(
                 EC.element_to_be_clickable(
                     (
@@ -216,6 +217,6 @@ class ActiveSG(SeleniumBase):
             court_name, available_timings = self._get_timing_for_court_loc(driver)
             all_available_timing.update({court_name: available_timings})
             driver.back()
-            time.sleep(1)
+            time.sleep(2)
         driver.quit()
         return all_available_timing
