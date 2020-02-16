@@ -69,19 +69,22 @@ def get_user_info():
         "What is your active sg password? (Relax, only you can see this) "
     )
 
-    return user, pass_
+    chrome_driver = get_confirmed_response(
+        "Where did you download chromedriver too? (e.g. C:/downloads/chromedriver.exe) "
+    )
+    return user, pass_, chrome_driver
 
 
 def first_time_setup():
     with open("top_secret.txt", "r+") as f:
         line = f.readline()
         if line == "NO":
-            user, password = get_user_info()
+            user, password, chrome_driver = get_user_info()
             print(
                 "Writing user details to top_secret.txt. \nIf you made a mistake, just go into the file and replace all the content with 'NO'\n"
             )
             f.seek(0)
-            f.write("YES\n" + user + "\n" + password)
+            f.write("YES\n" + user + "\n" + password + "\n" + chrome_driver)
 
 
 def main():

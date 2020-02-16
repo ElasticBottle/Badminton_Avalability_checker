@@ -8,6 +8,12 @@ class SeleniumBase(ABC):
         super().__init__()
         self.baseURL = baseURL
 
+    def _get_driver_loc(self):
+        with open("top_secret.txt") as f:
+            for _ in range(4):
+                line = f.readline()
+            return line
+
     class _Browser(enum.Enum):
         """
         Contains the value for the type of browser that may run, firefox or chrome

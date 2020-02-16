@@ -186,10 +186,7 @@ class OnePa(SeleniumBase):
             dictionary: Contains all the names of CC with badminton courts mapped to their list of available timings.
         """
         start = time.time()
-        driver = self._get_driver(
-            "chrome",
-            "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
-        )
+        driver = self._get_driver("chrome", super()._get_driver_loc())
 
         self._click_date(driver, day)
         print("checking", day, "th Feb for courts")
