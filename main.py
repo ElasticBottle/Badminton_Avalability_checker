@@ -27,11 +27,11 @@ def save_to_csv(df_to_save, filename):
 
 
 def get_valid_month():
-    month = int(input("What month do you wnat to search in? (should be a number) "))
+    month = int(input("What month do you want to search in? (should be a number) "))
     while month < 1 or month > 12:
         month = int(
             input(
-                "Invalid input \n\nWhat month do you wnat to search in? (should be a number) "
+                "Invalid input \n\nWhat month do you want to search in? (should be a number) "
             )
         )
     return month
@@ -46,20 +46,42 @@ def get_valid_day():
     return day
 
 
-def get_confirmed_response():
-    words = input("")
+def get_confirmed_response(to_ask):
+    while True:
+        words = input(to_ask)
+        confirmed = input("Are you sure? y/n ")
+        if (
+            confirmed == "y"
+            or confirmed == "Y"
+            or confirmed == "yes"
+            or confirmed == "Yes"
+        ):
+            break
+    return words
 
 
 def get_user_info():
-    user = get_confirmed_response("what is your active sg username?")
-    pass_ = get_con
+    print("Hello and welcome to Badminton Availability Check (BAC) Alpha release")
+    user = get_confirmed_response(
+        "what is your active sg username? (Relax, only you can see this) "
+    )
+    pass_ = get_confirmed_response(
+        "What is your active sg password? (Relax, only you can see this) "
+    )
+
+    return user, pass_
 
 
 def first_time_setup():
-    with open("top_secret.txt", "wr") as f:
+    with open("top_secret.txt", "r+") as f:
         line = f.readline()
         if line == "NO":
-            get_user_info()
+            user, password = get_user_info()
+            print(
+                "Writing user details to top_secret.txt. \nIf you made a mistake, just go into the file and replace all the content with 'NO'\n"
+            )
+            f.seek(0)
+            f.write("YES\n" + user + "\n" + password)
 
 
 def main():
