@@ -15,7 +15,6 @@
 
 
 from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -25,7 +24,6 @@ from selenium_base import SeleniumBase
 from user_info import UserInfo
 
 STARTING_URL = "https://members.myactivesg.com/auth?redirect=%2Fprofile"
-NUMBER_OF_BADMINTON_LOC = 295
 PAUSE = 5
 
 
@@ -199,7 +197,7 @@ class ActiveSG(SeleniumBase):
         )
 
         for i in range(len(available_courts)):
-            element = WebDriverWait(driver, PAUSE).until(
+            court = WebDriverWait(driver, PAUSE).until(
                 EC.element_to_be_clickable(
                     (
                         By.XPATH,
@@ -209,8 +207,8 @@ class ActiveSG(SeleniumBase):
                     )
                 )
             )
-            driver.execute_script("arguments[0].scrollIntoView();", element)
-            element.click()
+            driver.execute_script("arguments[0].scrollIntoView();", court)
+            court.click()
 
             court_name, available_timings = self._get_timing_for_court_loc(driver)
             all_available_timing.update({court_name: available_timings})
