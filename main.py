@@ -93,6 +93,16 @@ def main():
     start = time.time()
     month = get_valid_month()
     day = get_valid_day()
+    active_sg_slots = get_data_from_active_sg(month, day)
+    save_to_csv(
+        active_sg_slots,
+        str(day)
+        + "_"
+        + str(month)
+        + "_"
+        + str(datetime.date.today().year)
+        + "_active_sg.csv",
+    )
     pa_slots = get_data_from_pa(month, day)
     save_to_csv(
         pa_slots,
@@ -104,16 +114,6 @@ def main():
         + "_one_pa.csv",
     )
 
-    active_sg_slots = get_data_from_active_sg(month, day)
-    save_to_csv(
-        active_sg_slots,
-        str(day)
-        + "_"
-        + str(month)
-        + "_"
-        + str(datetime.date.today().year)
-        + "_active_sg.csv",
-    )
     end = time.time()
     print("time taken", end - start, "seconds")
 
