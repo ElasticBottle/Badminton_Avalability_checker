@@ -106,10 +106,14 @@ class ActiveSG(SeleniumBase):
                 return self._get_right_date(driver, day)
 
     def _set_activity(self, driver):
-        driver.find_element_by_xpath('//*[@id="activity_filter_chosen"]').click()
-        driver.find_elements_by_xpath('//*[@id="activity_filter_chosen"]/div/ul/li')[
-            1
-        ].click()
+        WebDriverWait(driver, PAUSE).until(
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="activity_filter_chosen"]'))
+        ).click()
+        WebDriverWait(driver, PAUSE).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, '//*[@id="activity_filter_chosen"]/div/ul/li[2]')
+            )
+        ).click()
 
     def _set_date_and_activity(self, driver, day):
         self._set_activity(driver)
@@ -198,7 +202,7 @@ class ActiveSG(SeleniumBase):
         available_courts = driver.find_elements_by_xpath(
             './/*[@id = "main"]/div/div/article/div/section/ul/li'
         )
-
+        # TODO: navigate to next page and get number of courts there
         for i in range(len(available_courts)):
             court = WebDriverWait(driver, PAUSE).until(
                 EC.element_to_be_clickable(
@@ -218,4 +222,5 @@ class ActiveSG(SeleniumBase):
             driver.back()
             time.sleep(2)
         driver.quit()
+
         return all_available_timing
