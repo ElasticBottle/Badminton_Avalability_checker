@@ -24,6 +24,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from selenium_base import SeleniumBase
 from user_info import UserInfo
+from selenium.webdriver.common.action_chains import ActionChains
 
 STARTING_URL = "https://members.myactivesg.com/auth?redirect=%2Fprofile"
 PAUSE = 5
@@ -106,14 +107,20 @@ class ActiveSG(SeleniumBase):
                 return self._get_right_date(driver, day)
 
     def _set_activity(self, driver):
-        WebDriverWait(driver, PAUSE).until(
-            EC.element_to_be_clickable((By.XPATH, '//*[@id="activity_filter_chosen"]'))
-        ).click()
-        WebDriverWait(driver, PAUSE).until(
-            EC.element_to_be_clickable(
-                (By.XPATH, '//*[@id="activity_filter_chosen"]/div/ul/li[2]')
+        activity_box = WebDriverWait(driver, PAUSE).until(
+            EC.visibility_of_element_located(
+                (By.XPATH, '//*[@id="activity_filter_chosen"]')
             )
-        ).click()
+        )
+        driver.execute_script("arguments[0].scrollIntoView();", activity_box)
+        activity_box.click()
+        option_to_select = driver.find_element_by_xpath(
+            '//*[@id="activity_filter_chosen"]/div/ul/li[2]'
+        )
+        actions = ActionChains(driver)
+        actions.move_to_element(option_to_select)
+        actions.click()
+        actions.perform()
 
     def _set_date_and_activity(self, driver, day):
         self._set_activity(driver)
