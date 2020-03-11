@@ -194,6 +194,21 @@ class ActiveSG(SeleniumBase):
         print(court_name, ":\n", available_timings)
         return court_name, available_timings
 
+    def _check_for_next_page(self, driver):
+        next_buttons = driver.find_elements_by_xpath(
+            '//*[@id="main"]/div[3]/div/article/div/section/div/ul/li[6]/a'
+        )
+        next_button = None
+        if next_buttons:
+            for button in next_buttons:
+                if button.get_attribute("innerText") == "Next →":
+                    next_button = button
+            print(next_button.get_attribute("innerText"))
+            driver.execute_script("arguments[0].scrollIntoView();", next_button)
+            next_button.click()
+            return True
+        return False
+
     def get_available_timings(self, day):
         driver = self._get_driver(
             "chrome",
@@ -206,28 +221,35 @@ class ActiveSG(SeleniumBase):
         all_available_timing = dict()
         self._set_date_and_activity(driver, day)
 
-        available_courts = driver.find_elements_by_xpath(
-            './/*[@id = "main"]/div/div/article/div/section/ul/li'
-        )
-        # TODO: navigate to next page and get number of courts there
-        for i in range(len(available_courts)):
-            court = WebDriverWait(driver, PAUSE).until(
-                EC.element_to_be_clickable(
-                    (
-                        By.XPATH,
-                        './/*[@id = "main"]/div/div/article/div/section/ul/li['
-                        + str(i + 1)
-                        + "]",
-                    )
+        have_courts = True
+        while have_courts:
+            available_courts = WebDriverWait(driver, PAUSE).until(
+                EC.presence_of_all_elements_located(
+                    (By.XPATH, './/*[@id = "main"]/div/div/article/div/section/ul/li')
                 )
             )
-            driver.execute_script("arguments[0].scrollIntoView();", court)
-            court.click()
 
-            court_name, available_timings = self._get_timing_for_court_loc(driver)
-            all_available_timing.update({court_name: available_timings})
-            driver.back()
-            time.sleep(2)
+            # TODO: navigate to next page and get number of courts there
+            for i in range(len(available_courts)):
+                court = WebDriverWait(driver, PAUSE).until(
+                    EC.element_to_be_clickable(
+                        (
+                            By.XPATH,
+                            './/*[@id = "main"]/div/div/article/div/section/ul/li['
+                            + str(i + 1)
+                            + "]",
+                        )
+                    )
+                )
+                driver.execute_script("arguments[0].scrollIntoView();", court)
+                court.click()
+
+                court_name, available_timings = self._get_timing_for_court_loc(driver)
+                all_available_timing.update({court_name: available_timings})
+                driver.back()
+                time.sleep(2)
+            have_courts = self._check_for_next_page(driver)
+
         driver.quit()
 
         return all_available_timing
