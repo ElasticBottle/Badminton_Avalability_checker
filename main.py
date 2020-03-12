@@ -60,6 +60,13 @@ def get_confirmed_response(to_ask):
     return words
 
 
+def get_yes_no_response(to_ask):
+    confirmed = input(to_ask + " y/n ")
+    return (
+        confirmed == "y" or confirmed == "Y" or confirmed == "yes" or confirmed == "Yes"
+    )
+
+
 def get_user_info():
     print("Hello and welcome to Badminton Availability Check (BAC) Alpha release")
     user = get_confirmed_response(
@@ -70,7 +77,7 @@ def get_user_info():
     )
 
     chrome_driver = get_confirmed_response(
-        "Where did you download chromedriver too? (e.g. C:/downloads/chromedriver.exe) "
+        "Where did you download chromedriver too? (e.g. C:/downloads/chromedriver.exe) It should start with 'C:' and end with 'chromedriver.exe' "
     )
     return user, pass_, chrome_driver
 
@@ -93,26 +100,32 @@ def main():
     start = time.time()
     month = get_valid_month()
     day = get_valid_day()
-    active_sg_slots = get_data_from_active_sg(month, day)
-    save_to_csv(
-        active_sg_slots,
-        str(day)
-        + "_"
-        + str(month)
-        + "_"
-        + str(datetime.date.today().year)
-        + "_active_sg.csv",
+    search_active_sg = get_yes_no_response(
+        "Do you want to search active SG badminton courts?"
     )
-    pa_slots = get_data_from_pa(month, day)
-    save_to_csv(
-        pa_slots,
-        str(day)
-        + "_"
-        + str(month)
-        + "_"
-        + str(datetime.date.today().year)
-        + "_one_pa.csv",
-    )
+    search_pa = get_yes_no_response("Do you want to search one PA badminton courts?")
+    if search_active_sg:
+        active_sg_slots = get_data_from_active_sg(month, day)
+        save_to_csv(
+            active_sg_slots,
+            str(day)
+            + "_"
+            + str(month)
+            + "_"
+            + str(datetime.date.today().year)
+            + "_active_sg.csv",
+        )
+    if search_pa:
+        pa_slots = get_data_from_pa(month, day)
+        save_to_csv(
+            pa_slots,
+            str(day)
+            + "_"
+            + str(month)
+            + "_"
+            + str(datetime.date.today().year)
+            + "_one_pa.csv",
+        )
 
     end = time.time()
     print("time taken", end - start, "seconds")
