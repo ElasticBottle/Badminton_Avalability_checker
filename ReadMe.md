@@ -31,13 +31,14 @@ Make sure it's the right version
 
 **STEP 3:** Almost done!
 
-1. Download the files (Using the green button somewhere along the right hand side)
+1. Download the files in this GitHub (Using the green button somewhere along the right hand side)
     * Extract them into a folder
-2. Open your command prompt (windows key, key in "cmd", should be the first application)
+2. Open your command prompt (windows key, type "cmd", should be the first application)
 3. Navigate to where all the files are installed in 
     * `cd Downloads\EXTRACTED_FILENAME_HERE` (if you placed the extracted folder in your downloads folder)
 4. type `pip3 install -r requirements.txt`
-wait
+
+wait.
 
 Once everything's done, you're good to go!
 
