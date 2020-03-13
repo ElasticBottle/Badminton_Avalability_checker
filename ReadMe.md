@@ -15,6 +15,7 @@ In particular this bot will check for all courts in:
 ## Installation
 I am assuming that you have no technical background and are starting from scratch.
 I am also assuming you are using Windows (sorry Mac users (||^_^))
+
 **STEP 1:** [Download latest version of python 3](https://www.python.org/downloads/windows/)
 
 This should be the first link
@@ -24,7 +25,6 @@ _When installing:_
 
 
 **STEP 2:** Download the piloting driver for your _Chrome_ browser [here](https://chromedriver.chromium.org/downloads)
-
 Make sure it's the right version
 * In chrome, click the three dot in the upper right hand corner -> help -> about google chrome, should be 80....)
 
