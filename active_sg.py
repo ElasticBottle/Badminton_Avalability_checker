@@ -229,7 +229,6 @@ class ActiveSG(SeleniumBase):
                 )
             )
 
-            # TODO: navigate to next page and get number of courts there
             for i in range(len(available_courts)):
                 court = WebDriverWait(driver, PAUSE).until(
                     EC.element_to_be_clickable(
