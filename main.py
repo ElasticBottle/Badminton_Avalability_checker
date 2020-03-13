@@ -4,6 +4,7 @@ import pandas as pd
 from one_pa import OnePa
 from active_sg import ActiveSG
 from timing_matcher import TimingMatcher
+import concurrent.futures as cf
 
 
 def get_data_from_active_sg(month, day):
@@ -11,7 +12,7 @@ def get_data_from_active_sg(month, day):
     available_timings = active_sg.get_available_timings(day)
     matched_times = TimingMatcher()
     timing_df = matched_times.group_by_timings_active_sg(month, day, available_timings)
-    return timing_df
+    return ("active_sg.csv", timing_df)
 
 
 def get_data_from_pa(month, day):
@@ -19,7 +20,7 @@ def get_data_from_pa(month, day):
     available_timings = one_pa.get_available_timings(day)
     matched_times = TimingMatcher()
     timing_df = matched_times.group_by_timings_on_pa(month, day, available_timings)
-    return timing_df
+    return ("one_pa.csv", timing_df)
 
 
 def save_to_csv(df_to_save, filename):
@@ -104,28 +105,47 @@ def main():
         "Do you want to search active SG badminton courts?"
     )
     search_pa = get_yes_no_response("Do you want to search one PA badminton courts?")
-    if search_active_sg:
-        active_sg_slots = get_data_from_active_sg(month, day)
-        save_to_csv(
-            active_sg_slots,
-            str(day)
-            + "_"
-            + str(month)
-            + "_"
-            + str(datetime.date.today().year)
-            + "_active_sg.csv",
-        )
-    if search_pa:
-        pa_slots = get_data_from_pa(month, day)
-        save_to_csv(
-            pa_slots,
-            str(day)
-            + "_"
-            + str(month)
-            + "_"
-            + str(datetime.date.today().year)
-            + "_one_pa.csv",
-        )
+    with cf.ThreadPoolExecutor() as executor:
+        results = []
+        if search_active_sg:
+            results.append(executor.submit(get_data_from_active_sg, month, day))
+        if search_pa:
+            results.append(executor.submit(get_data_from_pa, month, day))
+
+        for csv in cf.as_completed(results):
+            print("Done searching")
+            save_to_csv(
+                csv.result()[1],
+                str(day)
+                + "_"
+                + str(month)
+                + "_"
+                + str(datetime.date.today().year)
+                + csv.result()[0],
+            )
+
+    # if search_active_sg:
+    #     active_sg_slots = get_data_from_active_sg(month, day)
+    #     save_to_csv(
+    #         active_sg_slots,
+    #         str(day)
+    #         + "_"
+    #         + str(month)
+    #         + "_"
+    #         + str(datetime.date.today().year)
+    #         + "_active_sg.csv",
+    #     )
+    # if search_pa:
+    #     pa_slots = get_data_from_pa(month, day)
+    #     save_to_csv(
+    #         pa_slots,
+    #         str(day)
+    #         + "_"
+    #         + str(month)
+    #         + "_"
+    #         + str(datetime.date.today().year)
+    #         + "_one_pa.csv",
+    #     )
 
     end = time.time()
     print("time taken", end - start, "seconds")
