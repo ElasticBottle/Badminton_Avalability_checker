@@ -1,19 +1,3 @@
-# def active_sg():
-#     LOGIN_URL = "https://members.myactivesg.com/auth/signin"
-
-#     REQUEST_URL = "https://members.myactivesg.com/facilities/view/activity/18/venue/292?time_from=1581609600"
-
-#     payload = {"email": "s9909427c", "password": "however200"}
-
-#     with requests.Session() as session:
-#         post = session.post(LOGIN_URL, data=payload)
-#         print(post, "\n\n")
-#         results = soup.find(id="formTimeslots")
-#         print(results.prettify())
-#         r = session.get(REQUEST_URL)
-#         soup = BeautifulSoup(r.content, "html.parser")
-
-
 import time
 
 from selenium import webdriver
@@ -107,6 +91,13 @@ class ActiveSG(SeleniumBase):
                 return self._get_right_date(driver, day)
 
     def _set_activity(self, driver):
+        """
+        Sets the value of the activity dropdown to "Badminton"
+
+        Args:
+            driver (WebDriver): Either the Firefox or Chrome WebDriver
+                Should be set to othe book facility page in Active SG
+        """
         activity_box = WebDriverWait(driver, PAUSE).until(
             EC.visibility_of_element_located(
                 (By.XPATH, '//*[@id="activity_filter_chosen"]')
@@ -123,6 +114,14 @@ class ActiveSG(SeleniumBase):
         actions.perform()
 
     def _set_date_and_activity(self, driver, day):
+        """
+        Sets the day that is to be checked for
+
+        Args:
+            driver (WebDriver): Either the Firefox or Chrome WebDriver
+                Should be set to othe book facility page in Active SG
+            day (int): contains the day of the month that is to be searched
+        """
         self._set_activity(driver)
         clicked = self._set_date(driver, day)
         if not clicked:
@@ -195,6 +194,17 @@ class ActiveSG(SeleniumBase):
         return court_name, available_timings
 
     def _check_for_next_page(self, driver):
+        """
+        Checks for next available page containing badminton courts.
+        driver is navigated to the next page if one exist, does nothing to driver otherwise
+
+        Args:
+            driver (WebDrive): Contains either firefox or chrome webdriver.
+                driver should be set to the badminton booking page.
+        
+        Returns:
+            Bool: True if next page has been navigated too, False otherwise.
+        """
         next_buttons = driver.find_elements_by_xpath(
             '//*[@id="main"]/div[3]/div/article/div/section/div/ul/li[6]/a'
         )
@@ -210,6 +220,16 @@ class ActiveSG(SeleniumBase):
         return False
 
     def get_available_timings(self, day):
+        """
+        Retrieves all the available badminton court with its associated timing
+
+        Args:
+            day (int): contains the day in which courts are to be searched for
+
+        Returns:
+            dictionary<string, list<string>>: Key represent the court names
+                Value contains the list of strings representing the available timings of the court
+        """
         driver = self._get_driver(
             "chrome",
             "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
