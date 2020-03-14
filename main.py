@@ -8,6 +8,17 @@ import concurrent.futures as cf
 
 
 def get_data_from_active_sg(month, day):
+    """
+    Retrieves a dictionary of available timing from active sg badminton courts and converts it to a nice dataframe
+
+    Args:
+        month (int): Correspond to the month to search in. Only affects the value in dataframe, doesn't affect the month being searched
+        dat (int): Corresponds to the day of the month to search in
+
+    Returns:
+        tuple(string, Dataframe): String contains the identifier for the Dataframe
+            Dataframe contains the details of available courts, indexed by time
+    """
     active_sg = ActiveSG()
     available_timings = active_sg.get_available_timings(day)
     matched_times = TimingMatcher()
@@ -16,6 +27,17 @@ def get_data_from_active_sg(month, day):
 
 
 def get_data_from_pa(month, day):
+    """
+    Retrieves a dictionary of available timing from one pa badminton courts and converts it to a nice dataframe
+
+    Args:
+        month (int): Correspond to the month to search in. Only affects the value in dataframe, doesn't affect the month being searched
+        dat (int): Corresponds to the day of the month to search in
+
+    Returns:
+        tuple(string, Dataframe): String contains the identifier for the Dataframe
+            Dataframe contains the details of available courts, indexed by time
+    """
     one_pa = OnePa()
     available_timings = one_pa.get_available_timings(day)
     matched_times = TimingMatcher()
@@ -27,24 +49,11 @@ def save_to_csv(df_to_save, filename):
     df_to_save.to_csv(filename, header=False)
 
 
-def get_valid_month():
-    month = int(input("What month do you want to search in? (should be a number) "))
-    while month < 1 or month > 12:
-        month = int(
-            input(
-                "Invalid input \n\nWhat month do you want to search in? (should be a number) "
-            )
-        )
-    return month
-
-
-def get_valid_day():
-    day = int(input("What day of the month? (should be a number) "))
-    while day < 1 or day > 31:
-        day = int(
-            input("Invalid input \n\nWhat day of the month? (should be a number) ")
-        )
-    return day
+def get_num_in_range(min_num, max_num, to_ask, error_msg):
+    num = int(input(to_ask))
+    while num < min_num or num > max_num:
+        num = int(input(error_msg))
+    return num
 
 
 def get_confirmed_response(to_ask):
@@ -99,8 +108,18 @@ def main():
     # date = datetime.datetime(2020, 2, 14)
     first_time_setup()
     start = time.time()
-    month = get_valid_month()
-    day = get_valid_day()
+    month = get_num_in_range(
+        1,
+        12,
+        "What month do you want to search in? (should be a number) ",
+        "Invalid input \n\nWhat month do you want to search in? (should be a number) ",
+    )
+    day = get_num_in_range(
+        1,
+        31,
+        "What day of the month? (should be a number) ",
+        "Invalid input \n\nWhat day of the month? (should be a number) ",
+    )
     search_active_sg = get_yes_no_response(
         "Do you want to search active SG badminton courts?"
     )
