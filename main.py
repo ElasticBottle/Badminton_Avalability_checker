@@ -65,9 +65,12 @@ def get_confirmed_response(to_ask):
     return words
 
 
-def get_yes_no_response(to_ask):
+def get_yes_no_response(to_ask, default):
     confirmed = input(to_ask + " y/n ")
-    return confirmed == "y" or confirmed == "Y" or confirmed == "yes" or confirmed == "Yes"
+    if not confirmed:
+        return default
+    return confirmed.lower() in ["y", "yes"]
+
 
 
 def get_activity_response(to_ask):
@@ -126,13 +129,9 @@ def main():
         "What day of the month? (should be a number) ",
         "Invalid input \n\nWhat day of the month? (should be a number) ",
     )
-    search_active_sg = get_yes_no_response(
-        "Do you want to search active SG badminton courts?"
-    )
-    search_pa = get_yes_no_response("Do you want to search one PA badminton courts?")
-    search_activity = get_activity_response(
-        "Which activity do you want to search for (1.Badminton 2.Tennis 3.Squesh)? "
-    )
+    search_active_sg = get_yes_no_response("Do you want to search active SG badminton courts?", True)
+    search_pa = get_yes_no_response("Do you want to search one PA badminton courts?", False)
+    search_activity = get_activity_response("Which activity do you want to search for (1.Badminton 2.Tennis 3.Squesh)? ")
     with cf.ThreadPoolExecutor() as executor:
         results = []
         if search_active_sg:
