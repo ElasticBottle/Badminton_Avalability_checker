@@ -60,21 +60,14 @@ def get_confirmed_response(to_ask):
     while True:
         words = input(to_ask)
         confirmed = input("Are you sure? y/n ")
-        if (
-            confirmed == "y"
-            or confirmed == "Y"
-            or confirmed == "yes"
-            or confirmed == "Yes"
-        ):
+        if confirmed == "y" or confirmed == "Y" or confirmed == "yes" or confirmed == "Yes":
             break
     return words
 
 
 def get_yes_no_response(to_ask):
     confirmed = input(to_ask + " y/n ")
-    return (
-        confirmed == "y" or confirmed == "Y" or confirmed == "yes" or confirmed == "Yes"
-    )
+    return confirmed == "y" or confirmed == "Y" or confirmed == "yes" or confirmed == "Yes"
 
 
 def get_activity_response(to_ask):
@@ -151,12 +144,7 @@ def main():
             print("Done searching")
             save_to_csv(
                 csv.result()[1],
-                str(day)
-                + "_"
-                + str(month)
-                + "_"
-                + str(datetime.date.today().year)
-                + csv.result()[0],
+                str(day) + "_" + str(month) + "_" + str(datetime.date.today().year) + csv.result()[0],
             )
 
     # if search_active_sg:

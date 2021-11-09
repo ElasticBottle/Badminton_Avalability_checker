@@ -48,9 +48,7 @@ class ActiveSG(SeleniumBase):
         clicked = False
         for date in elements:
             if (
-                date.is_enabled()
-                and date.is_displayed()
-                and str(date.get_attribute("innerText")) == str(day)
+                date.is_enabled() and date.is_displayed() and str(date.get_attribute("innerText")) == str(day)
             ):
                 date.click()
                 clicked = True
@@ -79,8 +77,7 @@ class ActiveSG(SeleniumBase):
         current_date = 0
         for date in dates:
             if (
-                date.get_attribute("class")
-                == "ui-state-default ui-state-highlight ui-state-active ui-state-hover"
+                date.get_attribute("class") == "ui-state-default ui-state-highlight ui-state-active ui-state-hover"
             ):
                 current_date = date.get_attribute("innerText")
                 if int(current_date) > day:
@@ -255,9 +252,7 @@ class ActiveSG(SeleniumBase):
                     EC.element_to_be_clickable(
                         (
                             By.XPATH,
-                            './/*[@id = "main"]/div/div/article/div/section/ul/li['
-                            + str(i + 1)
-                            + "]",
+                            f'.//*[@id = "main"]/div/div/article/div/section/ul/li[{str(i + 1)}]',
                         )
                     )
                 )
