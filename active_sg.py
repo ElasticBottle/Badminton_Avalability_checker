@@ -15,14 +15,15 @@ PAUSE = 5
 
 
 class ActiveSG(SeleniumBase):
-    def __init__(self):
+    def __init__(self, activity):
         super().__init__(STARTING_URL)
+        self.activity = activity
 
     def _login(self, driver, user, password):
         """
         Logs into the website to perform scraping
 
-         Args:
+        Args:
             driver (WebDriver): Contains either firefox or chrome webdriver.
                 Needed for use in interacting with the webpage that we want to log into
         """
@@ -47,9 +48,7 @@ class ActiveSG(SeleniumBase):
         clicked = False
         for date in elements:
             if (
-                date.is_enabled()
-                and date.is_displayed()
-                and str(date.get_attribute("innerText")) == str(day)
+                date.is_enabled() and date.is_displayed() and str(date.get_attribute("innerText")) == str(day)
             ):
                 date.click()
                 clicked = True
@@ -78,8 +77,7 @@ class ActiveSG(SeleniumBase):
         current_date = 0
         for date in dates:
             if (
-                date.get_attribute("class")
-                == "ui-state-default ui-state-highlight ui-state-active ui-state-hover"
+                date.get_attribute("class") == "ui-state-default ui-state-highlight ui-state-active ui-state-hover"
             ):
                 current_date = date.get_attribute("innerText")
                 if int(current_date) > day:
@@ -106,7 +104,7 @@ class ActiveSG(SeleniumBase):
         driver.execute_script("arguments[0].scrollIntoView();", activity_box)
         activity_box.click()
         option_to_select = driver.find_element_by_xpath(
-            '//*[@id="activity_filter_chosen"]/div/ul/li[2]'
+            f'//*[@id="activity_filter_chosen"]/div/ul/li[{self.activity}]'
         )
         actions = ActionChains(driver)
         actions.move_to_element(option_to_select)
@@ -232,7 +230,7 @@ class ActiveSG(SeleniumBase):
         """
         driver = self._get_driver(
             "chrome",
-            "C:/Users/winst/Documents/MEGA/Programs!/chromedriver_win32/chromedriver.exe",
+            "D:\\Tools\\chromedriver.exe",
         )
 
         self._login(driver, UserInfo.get_username(), UserInfo.get_password())
@@ -254,9 +252,7 @@ class ActiveSG(SeleniumBase):
                     EC.element_to_be_clickable(
                         (
                             By.XPATH,
-                            './/*[@id = "main"]/div/div/article/div/section/ul/li['
-                            + str(i + 1)
-                            + "]",
+                            f'.//*[@id = "main"]/div/div/article/div/section/ul/li[{str(i + 1)}]',
                         )
                     )
                 )

@@ -30,9 +30,7 @@ class OnePa(SeleniumBase):
 
         for date in elements:
             if (
-                date.is_enabled()
-                and date.is_displayed()
-                and str(date.get_attribute("innerText")) == str(day)
+                date.is_enabled() and date.is_displayed() and str(date.get_attribute("innerText")) == str(day)
             ):
                 date.click()
                 return True
@@ -96,7 +94,7 @@ class OnePa(SeleniumBase):
                 driver should be set to the badminton booking page of the CC that timing is to be retrieved for.
         
         Returns:
-            list<string>: A collection of the timings, either in 2 hour blocks or in 1 hour blocks 
+            list<string>: A collection of the timings, either in 2 hour blocks or in 1 hour blocks
                 Each entry represent a timing block. E.g "9.30 A.M. - 10.30 A.M."
         """
         timings = driver.find_elements_by_xpath(
@@ -126,10 +124,7 @@ class OnePa(SeleniumBase):
         courts = driver.find_elements_by_xpath(".//*[@id='facTable1']/div/span")
         available_courts = set()
         for court in courts:
-            if (
-                court.get_attribute("class") == "slots normal"
-                or court.get_attribute("class") == "slots peak"
-            ):
+            if court.get_attribute("class") == "slots normal" or court.get_attribute("class") == "slots peak":
                 available_courts.add(
                     court.find_element_by_xpath(".//div/input").get_attribute("id")[-1]
                 )
@@ -163,7 +158,7 @@ class OnePa(SeleniumBase):
             driver (WebDriver): Contains either firefox or chrome webdriver.
                 driver should be set to the badminton booking page of any CC
             cc_to_check (int): The index of the particular CC that you want to navigate too.
-                cc_to_check should be between 0 - 75 
+                cc_to_check should be between 0 - 75
         """
         cc_selector = driver.find_element_by_xpath(
             ".//*[@id='select2-content_0_ddlFacilityLocation-container']"

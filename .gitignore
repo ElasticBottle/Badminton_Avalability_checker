@@ -1,4 +1,4 @@
 .vscode
 top_secret.txt
-BAC
-BAC.zip
+*.pyc
+*.csv
